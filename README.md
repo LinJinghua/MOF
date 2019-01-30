@@ -18,7 +18,7 @@ Porous coordination network，PCN材料含有多个立方八面体纳米孔笼�
 ## UiO
 University of Oslo，UiO材料有含Zr（锆）的正八面体[Zr6O4(OH)4]与12个对苯酸（BDC）有机配体相连，形成八面体心孔笼和八个四面体角笼的三维微孔结构。
 
-**reference**
+**reference**  
 https://wenku.baidu.com/view/3a8a506d02d276a201292ea0.html
 
 http://gregchung.github.io/CoRE-MOFs/  
