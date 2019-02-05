@@ -50,4 +50,4 @@ ITEM: ATOMS id type xu yu zu
  12 2 34.0699 20.467 24.5413
 ```
 则第1步的MSD计算方法：
-MSD=(atom1_x-atom0_x)^2 + (atom1_y-)
+$$MSD=1/12 { {(atom1_1_x-atom1_0_x)^2 + (atom1_1_y-atom1_0_y)^2 + (atom1_1_z - atom1_0_z)^2} + {(atom2_1_x-atom2_0_x)^2 + (atom2_1_y-atom2_0_y)^2 + (atom2_1_z - atom1_0_z)^2} .... {(atom12_1_x-atom12_0_x)^2 + (atom12_1_y-atom12_0_y)^2 + (atom12_1_z - atom12_0_z)^2} }$$
