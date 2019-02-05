@@ -1,6 +1,6 @@
 1.RMSD 
 MSD (Mean Square Displacement) ，均方位移，其定义式如下：  
-$$MSD=<|r(t) - r(0)|^2> = 1/N \sum_{1}^{N} (r(t) - r(0))^2 $$
+$$MSD=<|r(t) - r(0)|^2> = 1/N \sum_{1}^{N} (r(t) - r(0))^2$$
 其中 <> 是对组内的所有原子进行平均。
 
 对于*.lammpstrj文件保存了客体小分子从timestep 0 ~ timesetp 5999三维坐标文件，其MSD计算方法如下：
