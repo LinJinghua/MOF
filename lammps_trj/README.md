@@ -52,3 +52,17 @@ ITEM: ATOMS id type xu yu zu
 则第1步的MSD计算方法：
 $$MSD_{atom1}=(34.6887 - 35.1818)^2 + (21.0979 - 21.7774)^2 + (22.6285 -  23.0179)^2$$
 $$MSD_{total}= 1/12 (MSD_{atom1} + MSD_{atom2} ... +MSD_{atom12})$$
+
+
+最后脚本的输出格式为：
+```
+timestep MSD
+1  xx
+2  xx
+...
+5999 xx
+```
+
+参考：
+{https://en.wikipedia.org/wiki/Mean_squared_displacement}  
+{http://blog.sciencenet.cn/blog-1231628-909586.html}  
