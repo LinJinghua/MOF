@@ -1,4 +1,4 @@
-1.RMSD 
+#.RMSD 
 MSD (Mean Square Displacement) ，均方位移，其定义式如下：  
 $$MSD=<|r(t) - r(0)|^2> = 1/N \sum_{1}^{N} (r(t) - r(0))^2$$
 其中 <> 是对组内的所有原子进行平均。
@@ -62,7 +62,8 @@ timestep MSD
 ...
 5999 xx
 ```
+注意每个lammpstrj文件中分子的原子数是不同的。
 
-参考：
-(https://en.wikipedia.org/wiki/Mean_squared_displacement)  
-(http://blog.sciencenet.cn/blog-1231628-909586.html)  
+参考:  
+https://en.wikipedia.org/wiki/Mean_squared_displacement  
+http://blog.sciencenet.cn/blog-1231628-909586.html  
