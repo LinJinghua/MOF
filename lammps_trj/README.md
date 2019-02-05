@@ -64,5 +64,5 @@ timestep MSD
 ```
 
 参考：
-{https://en.wikipedia.org/wiki/Mean_squared_displacement}  
-{http://blog.sciencenet.cn/blog-1231628-909586.html}  
+(https://en.wikipedia.org/wiki/Mean_squared_displacement)  
+(http://blog.sciencenet.cn/blog-1231628-909586.html)  
