@@ -51,4 +51,4 @@ ITEM: ATOMS id type xu yu zu
 ```
 则第1步的MSD计算方法：
 $$MSD\_atom1=(34.6887 - 35.1818)^2 + (21.0979 - 21.7774)^2 + (22.6285 -  23.0179)^2$$
-$$MSD\_total= 1/12 (MSD\_atom1 + MSD\_atom2 ... +MSD\_atom12 )$$
+$$MSD\_total= 1/12 (MSD\_atom1 + MSD\_atom2 ... +MSD\_atom12)$$
