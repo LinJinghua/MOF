@@ -2,11 +2,18 @@
 #include <cstdlib>
 #include <cstring>
 #include <string>
+#include <utility>
 #include <vector>
 
 #ifndef MAX_LINE_C
 #define MAX_LINE_C 0x10000
 #endif
+
+#define ALIAS_TEMPLATE_FUNCTION(identifier, function_name, ...)     \
+template <class... T>                                               \
+inline auto identifier(T&&... t) {                                  \
+    return function_name<__VA_ARGS__>(std::forward<T>(t)...);       \
+}
 
 typedef struct Point {
     double x, y, z;
@@ -27,16 +34,17 @@ typedef struct Point {
 
 static int file_line = 0;
 
-char* get_line(FILE* fp, int eof_return = 0) {
+template <int _EOF_Return>
+char* get_line_(FILE* fp) {
     static char buf[MAX_LINE_C];
     if (fgets(buf, sizeof(buf), fp) == NULL) {
-        if (ferror(fp)) {
-            fprintf(stderr, "I/O error when reading\n");
-        } else if (feof(fp)) {
-            if (eof_return) {
+        if (feof(fp)) {
+            if (_EOF_Return) {
                 return NULL;
             }
             fprintf(stderr, "Unexpected end of file\n");
+        } else if (ferror(fp)) {
+            fprintf(stderr, "I/O error when reading\n");
         } else {
             fprintf(stderr, "Unexpected error occurred when reading\n");
         }
@@ -47,7 +55,11 @@ char* get_line(FILE* fp, int eof_return = 0) {
     return buf;
 }
 
-int calc_pos(FILE* fp, std::vector<Point>& pos) {
+ALIAS_TEMPLATE_FUNCTION(get_line_eof, get_line_, 1)
+ALIAS_TEMPLATE_FUNCTION(get_line, get_line_, 0)
+
+template <int _Update>
+double get_pos_(FILE* fp, std::vector<Point>& pos) {
     int n = static_cast<int>(pos.size()), expect_id = 0;
     double square_sum = 0;
     while (n--) {
@@ -60,25 +72,33 @@ int calc_pos(FILE* fp, std::vector<Point>& pos) {
         }
         // printf("%d %d %f %f %f %s", id, type, xu, yu, zu, buf);
         if (id != expect_id + 1) {
-            fprintf(stderr, "Expect id %d but %d at line %d : %s", expect_id, id, file_line, buf);
+            fprintf(stderr, "Expect id %d but %d at line %d : %s",
+                expect_id, id, file_line, buf);
             return -2;
         }
         Point& prev = pos[expect_id++];
-        square_sum += prev.euclidean_distance(xu, yu, zu);
-        prev.set(xu, yu, zu);
+        if (!_Update) {
+            square_sum += prev.euclidean_distance(xu, yu, zu);
+        } else {
+            prev.set(xu, yu, zu);
+        }
     }
     return square_sum;
 }
 
+ALIAS_TEMPLATE_FUNCTION(set_pos, get_pos_, 1)
+ALIAS_TEMPLATE_FUNCTION(calc_pos, get_pos_, 0)
+
 int skip_line(FILE* fp, const char* line_id) {
-    const char* buf;
+    std::string line;
     do {
-        buf = get_line(fp, 1);
-        if (buf == NULL) {
+        const char* buf = get_line_eof(fp);
+        if (!buf) {
             return -1;
         }
+        line.assign(buf);
         // printf("skip %d\n", file_line);
-    } while (std::string(buf).find(line_id) == std::string::npos);
+    } while (line.find(line_id) == std::string::npos);
     // } while (strcmp(get_line(fp), line_id));
     return 0;
 }
@@ -87,13 +107,11 @@ int get_num(FILE* fp, const char* line_id, int* num) {
     if (skip_line(fp, line_id)) {
         return -1;
     }
-    const char* buf = get_line(fp, 1);
-    if (buf == NULL) {
-        fprintf(stderr, "Unexpected end of file, expect a `NUM` line after line %s\n", line_id);
-        return -1;
-    }
-    if (sscanf(buf, "%d", num) != 1) {
-        fprintf(stderr, "Unexpected end of file, expect a `NUM` line after line %s\n", line_id);
+    const char* buf = get_line_eof(fp);
+    if (!buf || sscanf(buf, "%d", num) != 1) {
+        fprintf(stderr,
+            "Unexpected end of file, expect a `NUM` line after line %s\n",
+            line_id);
         return -1;
     }
     return 0;
@@ -109,36 +127,42 @@ FILE* get_file(const char* filename, const char* mode) {
     return fp;
 }
 
-int main() {
+int process(FILE* fp_in, FILE* fp_out) {
     const char* timestep_line = "ITEM: TIMESTEP";
     const char* atom_num_line = "ITEM: NUMBER OF ATOMS";
     const char* atom_pos_line = "ITEM: ATOMS id type xu yu zu";
     int timestep, atom_num;
-    FILE *fp_in = stdin, *fp_out = stdout;
     fprintf(fp_out, "timestep MSD\n");
-    if (get_num(fp_in, timestep_line, &timestep) == 0
-        && get_num(fp_in, atom_num_line, &atom_num) == 0) {
+    if (!get_num(fp_in, timestep_line, &timestep)
+        && !get_num(fp_in, atom_num_line, &atom_num)
+        && !skip_line(fp_in, atom_pos_line)) {
         if (atom_num < 0) {
             fprintf(stderr, "NUMBER OF ATOMS expect >=0 but %d", atom_num);
             return -1;
         }
         std::vector<Point> pos(atom_num);
-        skip_line(fp_in, atom_pos_line);
-        calc_pos(fp_in, pos);
-        while (get_num(fp_in, timestep_line, &timestep) == 0
-            && get_num(fp_in, atom_num_line, &atom_num) == 0) {
+        if (set_pos(fp_in, pos) < .0) {
+            return -1;
+        }
+        while (!get_num(fp_in, timestep_line, &timestep)
+            && !get_num(fp_in, atom_num_line, &atom_num)
+            && !skip_line(fp_in, atom_pos_line)) {
             if (atom_num != static_cast<int>(pos.size())) {
                 fprintf(stderr, "NUMBER OF ATOMS expect %d but %d",
                     static_cast<int>(pos.size()), atom_num);
                 return -1;
             }
-            skip_line(fp_in, atom_pos_line);
             double msd = calc_pos(fp_in, pos);
-            if (msd < 0) {
+            if (msd < .0) {
                 return -1;
             }
             fprintf(fp_out, "%d %f\n", timestep, msd / atom_num);
         }
     }
     return 0;
+}
+
+int main(int argc, char* argv[]) {
+    (void)argc; (void)argv;
+    return process(stdin, stdout);
 }
