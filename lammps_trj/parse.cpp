@@ -1,7 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
+#include <cctype>
 #include <cstring>
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -89,17 +89,28 @@ double get_pos_(FILE* fp, std::vector<Point>& pos) {
 ALIAS_TEMPLATE_FUNCTION(set_pos, get_pos_, 1)
 ALIAS_TEMPLATE_FUNCTION(calc_pos, get_pos_, 0)
 
+const char* skip_blank(const char* str) {
+    while (*str && std::isspace(static_cast<unsigned char>(*str))) {
+      ++str;
+    }
+    return str;
+}
+
+int strcmp_blank(const char* blank, const char* str) {
+    blank = skip_blank(blank);
+    int len = strlen(str);
+    return strncmp(blank, str, len) || *skip_blank(blank + len);
+}
+
 int skip_line(FILE* fp, const char* line_id) {
-    std::string line;
+    const char* buf;
     do {
-        const char* buf = get_line_eof(fp);
+        buf = get_line_eof(fp);
         if (!buf) {
             return -1;
         }
-        line.assign(buf);
-        // printf("skip %d\n", file_line);
-    } while (line.find(line_id) == std::string::npos);
-    // } while (strcmp(get_line(fp), line_id));
+        // printf("skip %d %s\n", file_line, buf);
+    } while (strcmp_blank(buf, line_id));
     return 0;
 }
 
